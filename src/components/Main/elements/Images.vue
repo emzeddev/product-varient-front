@@ -83,26 +83,43 @@
           افزودن تصویر
         </button>
       </div>
+
+      <!-- <div class="mt-4 text-left">
+        <button
+          class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition cursor-pointer"
+          @click="setProductImagesOnStore()"
+        >
+          ذخیره تغییرات
+        </button>
+      </div> -->
     </div>
-  </template>
+</template>
   
-  <script setup>
-  import { reactive } from 'vue'
+<script setup>
+  import { reactive, computed, getCurrentInstance, toRaw } from 'vue'
+  import store from '@/store/index.js'
   
-  let idCounter = 1
+  const { appContext } = getCurrentInstance()
+  let idCounter = 2
+
+  const images = computed(() => store.getters.getProductImages)
   
-  const images = reactive([
-    {
-      id: idCounter++,
-      file: null,
-      preview: '',
-      alt: '',
-      isMain: false,
-    },
-  ])
+
+
+  // const show_alert = (obj) => {
+  //   const {$toast} = appContext.config.globalProperties;
+
+  //   $toast(obj.text, {
+  //     "type": obj.type,
+  //     "dangerouslyHTMLString": true,
+  //     "position": "bottom-right",
+  //     "transition": "flip",
+  //     "dir": "rtl"
+  //   })
+  // }
   
-  function addNewImage() {
-    images.push({
+  const addNewImage = () => {
+    store.dispatch('addProductImage', {
       id: idCounter++,
       file: null,
       preview: '',
@@ -111,26 +128,104 @@
     })
   }
   
-  function removeImage(index) {
-    images.splice(index, 1)
+  const removeImage = (index) => {
+    store.dispatch('removeProductImage', index)
   }
   
-  function setMainImage(index) {
-    images.forEach((img, i) => {
-      img.isMain = i === index
-    })
+  const setMainImage = (index) => {
+    store.dispatch('setProductMainImage', index)
   }
   
-  function handleImageUpload(event, index) {
+  const handleImageUpload = (event, index) => {
     const file = event.target.files[0]
     if (file) {
       const reader = new FileReader()
       reader.onload = () => {
-        images[index].preview = reader.result
-        images[index].file = file
+        store.dispatch('setProductImageFile', {
+          index: index,
+          file: event.target.files[0],
+          preview: reader.result,
+        })
       }
       reader.readAsDataURL(file)
     }
   }
+
+  // const setProductImagesOnStore = async (obj) => {
+  //   const validate = await validateImages()
+  //     .then((result) => {
+
+  //       const plainImages = JSON.parse(JSON.stringify(images))
+  //       store.dispatch('updateProductImages', plainImages)
+
+  //       show_alert({
+  //         text: "تغییرات اعمال شد",
+  //         type: 'success',
+  //       })
+  //     })
+  //     .catch((err) => {
+  //       show_alert({
+  //         text: err.message,
+  //         type: 'error',
+  //       })
+  //     })
+  // }
+
+  
+
+
+  // const validateImages = () => {
+  //   const allFilesPresent = images.every(image => image.file !== null);
+  //   const mainImagesCount = images.filter(image => image.isMain).length;
+
+  //   return new Promise((resolve, reject) => {
+  //     if (!allFilesPresent) {
+  //       reject({
+  //         valid: false,
+  //         message: 'برای تمامی عکس ها فایل مورد نظر را باید انتخاب کنید',
+  //       });
+  //     }
+
+  //     if(mainImagesCount !== 1) {
+  //       reject({
+  //         valid: false,
+  //         message: 'یکی از عکس ها را به عنوان عکس اصلی انتخاب کنید',
+  //       });
+  //     }
+
+  //     resolve({
+  //       valid: true,
+  //       message: 'همه چیز اوکیه ✅',
+  //     });
+  //   });
+  // };
+
+
+  
   </script>
   
+
+  <style>
+/* Success toast: سبز */
+.Toastify__toast--success {
+  background-color: #28a745 !important; /* سبز Bootstrap */
+  color: #fff !important;
+}
+
+/* Error toast: قرمز */
+.Toastify__toast--error {
+  background-color: #dc3545 !important; /* قرمز Bootstrap */
+  color: #fff !important;
+}
+
+/* استایل عمومی همه toastها (اختیاری برای یکدست شدن) */
+.Toastify__toast {
+  border-radius: 8px !important;
+  font-family: "Vazirmatn", sans-serif !important;
+  font-size: 14px !important;
+  padding: 12px 16px !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
+  font-weight: bold!important;
+}
+    
+  </style>

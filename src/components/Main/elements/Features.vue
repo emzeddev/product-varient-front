@@ -16,6 +16,7 @@
         :key="spec.id"
         class="grid grid-cols-12 gap-2 mb-2 items-center relative"
       >
+        
         <!-- درگ بالا/پایین -->
         <div class="col-span-1 flex flex-col items-center text-gray-400 text-sm">
           <button @click="moveUp(index)" :disabled="index === 0" class="hover:text-gray-600 disabled:opacity-30">
@@ -28,6 +29,14 @@
   
         <!-- فیلد ویژگی با سرچ و افزودن -->
         <div class="col-span-5 relative">
+        
+          <span 
+            v-if="spec.dropdownOpen && filteredFeatures(index).length > 0"
+            @click="spec.dropdownOpen = false" 
+            class="absolute top-[40px] left-0 w-7 h-7 text-xl bg-red-500 text-bold rounded-full !z-[1000] flex items-center justify-center text-white cursor-pointer">
+            &times;
+          </span>
+
           <input
             v-model="spec.featureInput"
             @focus="spec.dropdownOpen = true"
@@ -36,6 +45,7 @@
             type="text"
             placeholder="جستجوی ویژگی..."
             class="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-800"
+
           />
           <!-- لیست نتایج -->
           <ul
@@ -44,11 +54,11 @@
           >
             <li
               v-for="feature in filteredFeatures(index)"
-              :key="feature"
-              @click="selectFeature(index, feature)"
+              :key="feature.id"
+              @click="selectFeature(index, feature.name)"
               class="px-3 py-1 hover:bg-indigo-100 cursor-pointer"
             >
-              {{ feature }}
+              {{ feature.name }}
             </li>
           </ul>
           <!-- اگر موردی پیدا نشد -->
@@ -89,86 +99,114 @@
         </button>
       </div>
     </div>
-  </template>
+</template>
   
-  <script setup>
-  import { reactive } from 'vue'
+<script setup>
+  import { reactive , onMounted , getCurrentInstance, computed } from 'vue'
+  import store from '@/store/index.js'
   
-  let nextId = 1
+
+
+  onMounted(async () => {
+    await store.dispatch('getAttributeList')
+  })
+  
+  let nextId = 2
   
   // ویژگی‌های پیش‌فرض
-  const features = reactive([
-    'ابعاد',
-    'وزن',
-    'توان مصرفی',
-    'نوع صفحه نمایش',
-    'ظرفیت',
-    'رنگ',
-    'جنس بدنه',
-    'قابلیت تنظیم دما',
-    'نوع موتور',
-    'استاندارد انرژی',
-    'گنجایش مخزن',
-    'فیلتر قابل شستشو',
-  ])
+  const features = computed(() => store.getters.getAttributeList)
+  const { appContext } = getCurrentInstance()
+  
   
   // لیست مشخصات
-  const specifications = reactive([
-    { id: nextId++, feature: '', featureInput: '', value: '', dropdownOpen: false },
-  ])
+  const specifications = computed(() => {
+    return store.getters.getProductSpecifications;
+  })
   
   // اضافه کردن ردیف
-  function addSpec() {
-    specifications.push({ id: nextId++, feature: '', featureInput: '', value: '', dropdownOpen: false })
+  const addSpec = () => {
+    store.dispatch('addProductSpecification', {
+      id: nextId++,
+      feature: '',
+      value: '',
+      featureInput: '',
+      dropdownOpen: false,
+    })
+  }
+
+  const show_alert = (obj) => {
+    const {$toast} = appContext.config.globalProperties;
+
+    $toast(obj.text, {
+      "type": obj.type,
+      "dangerouslyHTMLString": true,
+      "position": "bottom-right",
+      "transition": "flip",
+      "dir": "rtl"
+    })
   }
   
   // حذف
-  function removeSpec(index) {
-    specifications.splice(index, 1)
+  const removeSpec = (index) => {
+    store.dispatch('removeProductSpecification', index)
   }
   
   // جابجایی بالا/پایین
-  function moveUp(index) {
+  const moveUp =(index) => {
     if (index === 0) return
-    const temp = specifications[index - 1]
-    specifications[index - 1] = specifications[index]
-    specifications[index] = temp
+    const temp = specifications.value[index - 1]
+    specifications.value[index - 1] = specifications.value[index]
+    specifications.value[index] = temp
   }
   
-  function moveDown(index) {
-    if (index === specifications.length - 1) return
-    const temp = specifications[index + 1]
-    specifications[index + 1] = specifications[index]
-    specifications[index] = temp
+  const moveDown =(index) => {
+    if (index === specifications.value.length - 1) return
+    const temp = specifications.value[index + 1]
+    specifications.value[index + 1] = specifications.value[index]
+    specifications.value[index] = temp
   }
   
   // هنگام تایپ
-  function onFeatureInput(index) {
-    specifications[index].feature = ''
-    specifications[index].dropdownOpen = true
+  const onFeatureInput =(index) => {
+    specifications.value[index].feature = ''
+    specifications.value[index].dropdownOpen = true
   }
   
   // فیلتر لیست ویژگی‌ها
-  function filteredFeatures(index) {
-    const keyword = specifications[index].featureInput?.toLowerCase() || ''
-    return features.filter((f) => f.toLowerCase().includes(keyword))
+  const filteredFeatures =(index) => {
+    const keyword = specifications.value[index].featureInput?.toLowerCase() || ''
+    return features.value.filter((f) => f.name.toLowerCase().includes(keyword))
   }
   
   // انتخاب از لیست
-  function selectFeature(index, feature) {
-    specifications[index].feature = feature
-    specifications[index].featureInput = feature
-    specifications[index].dropdownOpen = false
+  const selectFeature =(index, feature) => {
+    specifications.value[index].feature = feature
+    specifications.value[index].featureInput = feature
+    specifications.value[index].dropdownOpen = false
   }
   
   // افزودن ویژگی جدید با Enter
-  function addNewFeature(index) {
-    const input = specifications[index].featureInput.trim()
-    if (input && !features.includes(input)) {
-      features.push(input)
+  const addNewFeature = async (index) => {
+    if(filteredFeatures(index).length === 0) {
+      
+      const input = specifications.value[index].featureInput.trim()
+      if (input) {
+        const result = await store.dispatch("saveAttribute", input).then(res => {
+          features.value.unshift({name: input})
+          show_alert({
+            text: res.message,
+            type: 'success',
+          })
+        }).catch(err => {
+          show_alert({
+            text: err.message,
+            type: 'error',
+          })
+        })
+      }
+      // specifications.value[index].feature = input
+      // specifications.value[index].dropdownOpen = false
     }
-    specifications[index].feature = input
-    specifications[index].dropdownOpen = false
   }
   </script>
   

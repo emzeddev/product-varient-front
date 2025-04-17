@@ -18,7 +18,7 @@
           <i class="absolute left-3 top-9 text-gray-500 pointer-events-none ti ti-chevron-down text-sm"></i>
         </div>
   
-        <div>
+        <div v-if="stockStatus === 'limited'" class="relative">
           <label class="block text-sm font-medium text-gray-700 mb-1">تعداد موجودی:</label>
           <input
             :value="stock"
