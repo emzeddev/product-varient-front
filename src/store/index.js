@@ -14,7 +14,7 @@ const store = createStore({
             maximum_order_q: null,
             is_spacial_offer: false,
             spacial_offer_date: '',
-            is_product_variantion: false,
+            has_variantion: true,
             default_variation_id: null,
             is_active: true,
             price_before_offer: null,
@@ -37,11 +37,25 @@ const store = createStore({
                 value: '',
                 dropdownOpen: false
             }],
-            attributes: [],
+            attributes: [{
+                feature: "",
+                input: "",
+                showDropdown: false,
+                tempValue: "",
+                values: [],
+            }],
             variants: [],
-            categories: []
+            primary_category_id: null,
+            other_category_ids: [],
+            sku_number: 0,
+            guarantee: null,
+            brand_id: null,
+            tags: []
         },
-        attribute_list: []
+        attribute_list: [],
+        brands_list: [],
+        categories_list: [],
+        tags_list: []
     },
     mutations: {
         setProductFaTitle(state, value) {
@@ -128,7 +142,163 @@ const store = createStore({
             } else {
                 console.error('Invalid specification index:', value);
             }
+        },
+        setProductDescription(state , value) {
+            state.productData.description = value;
+        },
+        setProductReview(state , value) {
+            state.productData.review = value;
+        },
+        setProductHasVariants(state , value) {
+            state.productData.has_variantion = value;
+        },
+        addProductAttributeGroup(state , value) {
+            // Check if the value is an object and has the required properties
+            if (typeof value === 'object' && value.hasOwnProperty('feature') && value.hasOwnProperty('input')) {
+                state.productData.attributes.push(value);
+            } else {
+                console.error('Invalid attribute group object:', value);
+            }
+        },
+        setProductVariants(state , value) {
+            // Check if the value is an array
+            if (Array.isArray(value)) {
+                state.productData.variants = value;
+            } else {
+                console.error('Invalid variants array:', value);
+            }
+        },
+        clearProductVariants(state , value=[]) {
+            // Check if the value is an array
+            if (Array.isArray(value)) {
+                state.productData.variants = value;
+                state.productData.attributes = [{
+                    feature: "",
+                    input: "",
+                    showDropdown: false,
+                    tempValue: "",
+                    values: [],
+                }];
+            } else {
+                console.error('Invalid variants array:', value);
+            }
+        },
+        updateProductAttributeGroup(state , value) {
+            // Check if the value is an array
+            if (Array.isArray(value)) {
+                state.productData.attributes = value;
+            } else {
+                console.error('Invalid attribute group array:', value);
+            }
+        },
+        setProductSeoTitle(state , value) {
+            state.productData.seo_title = value;
+        },
+        setProductSeoDescription(state , value) {
+            state.productData.seo_description = value;
+        },
+        setBrandsList(state , value) {
+            // Check if the value is an array
+            if (Array.isArray(value)) {
+                state.brands_list = value;
+            } else {
+                console.error('Invalid brands list:', value);
+            }
+        },
+        setCategoriesList(state , value) {
+            // Check if the value is an array
+            if (Array.isArray(value)) {
+                state.categories_list = value;
+            } else {
+                console.error('Invalid categories list:', value);
+            }
+        },
+        setTagsList(state , value) {
+            // Check if the value is an array
+            if (Array.isArray(value)) {
+                state.tags_list = value;
+            } else {
+                console.error('Invalid tags list:', value);
+            }
+        },
+        addToCategoriesList(state , value) {
+            // Check if the value is an array
+            if (typeof value === 'object' && value !== null) {
+                state.categories_list = [value , ...state.categories_list];
+            } else {
+                console.error('Invalid categories object:', value);
+            }
+        },
+        setProductCategoryId(state , value) {
+            // Check if the value is a number
+            if (typeof value === 'string' && value.length > 0) {
+                state.productData.primary_category_id = value;
+            } else {
+                console.error('Invalid category ID:', value);
+            }
+        },
+        setProductOtherCategoryIds(state , value) {
+            // Check if the value is an array
+            if (Array.isArray(value)) {
+                state.productData.other_category_ids = value;
+            } else {
+                console.error('Invalid other category IDs:', value);
+            }
+        },
+        addToBrandsList(state , value) {
+            // Check if the value is an object
+            if (typeof value === 'object' && value !== null) {
+                state.brands_list = [value , ...state.brands_list];
+            } else {
+                console.error('Invalid brand object:', value);
+            }
+        },
+        setProductBrandId(state , value) {
+            // Check if the value is a number
+            if (typeof value === 'string' && value.length > 0) {
+                state.productData.brand_id = value;
+            } else {
+                console.error('Invalid brand ID:', value);
+            }
+        },
+        setProductIsActive(state , value) {
+            state.productData.is_active = value;
+        },
+        setProductSkuNumber(state , value) {
+            
+            // Check if the value is a number
+            if (typeof value === 'number') {
+                state.productData.sku_number = value;
+            } else {
+                console.error('Invalid SKU number:', value);
+            }
+        },
+        setProductGuarantee(state , value) {
+            // Check if the value is a string
+            if (typeof value === 'string' && value.length > 0) {
+                state.productData.guarantee = value;
+            } else {
+                console.error('Invalid guarantee:', value);
+            }
+        },
+        addToTagsList(state , value) {
+            // Check if the value is an object
+            if (typeof value === 'object' && value !== null) {
+                state.tags_list = [value , ...state.tags_list];
+            } else {
+                console.error('Invalid tag object:', value);
+            }
+        },
+        addTpProductTags(state , value) {
+            // Check if the value is an array
+            if (Array.isArray(value)) {
+                state.productData.tags = value;
+            } else {
+                console.error('Invalid tags array:', value);
+            }
         }
+        
+
     },
     actions: {
         // Define asynchronous functions to commit mutations
@@ -229,6 +399,212 @@ const store = createStore({
                     })
                 }
             })
+        },
+        updateProductDescription({commit} , value) {
+            commit('setProductDescription', value);
+        },
+        updateProductReview({commit} , value) {
+            commit('setProductReview', value);
+        },
+        updateProductHasVariants({commit} , value) {
+            commit('setProductHasVariants', value);
+        },
+        addProductAttributeGroup({commit} , value) {
+            commit('addProductAttributeGroup', value);
+        },
+        updateProductVariants({commit} , value) {
+            commit('setProductVariants', value);
+        },
+        removeProductVariants({commit , state} , value) {
+            // Check if the value is a number
+            if (typeof value === 'number') {
+                commit('setProductVariants', state.productData.variants.filter((item , index) => index !== value));
+            } else {
+                console.error('Invalid variant index:', value);
+            }
+        },
+        clearVariants({commit}) {
+            commit('clearProductVariants', []);
+        },
+        removeProductAttributeGroup({commit , state} , value) {
+            // Check if the value is a number
+            if (typeof value === 'number') {
+                commit('updateProductAttributeGroup', state.productData.attributes.filter((item , index) => index !== value));
+            } else {
+                console.error('Invalid attribute group index:', value);
+            }
+        },
+        updateProductSeoTitle({commit} , value) {
+            commit('setProductSeoTitle', value);
+        },
+        updateProductSeoDescription({commit} , value) {
+            commit('setProductSeoDescription', value);
+        },
+        async getBrandsList({commit}) {
+            const result = await axios.get('/v1/brands')
+            if (result.status === 200) {
+                commit('setBrandsList', result.data);
+            }
+        },
+        async getCategoriesList({commit}) {
+            const result = await axios.get('/v1/categories')
+            if (result.status === 200) {
+                console.log(result);
+                commit('setCategoriesList', result.data);
+            }
+        },
+        async getTagsList({commit}) {
+            const result = await axios.get('/v1/tags')
+            if (result.status === 200) {
+                commit('setTagsList', result.data);
+            }
+        },
+        async saveCategory({commit} , value) {
+            return new Promise(async (resolve , reject) => {
+                if (value.title.length > 1) {
+                    try {
+                        const result = await axios.post('/v1/categories' , {
+                            title: value.title,
+                        })
+                        if(result.status === 201) {
+                            resolve({
+                                success: true,
+                                message: "دسته بندی با موفقیت ثبت شد",
+                                category: result.data.category
+                            })
+                        }
+                    } catch(error) {
+                        reject({
+                            success: false,
+                            message: "خطای سمت سرور"
+                        })
+                    }
+                } else {
+                    reject({
+                        success: false,
+                        message: "دسته بندی نامعتبر است"
+                    })
+                }
+            })
+        },
+        updateCategoriesList({commit} , value) {
+            // Check if the value is an array
+            if (typeof value === 'object' && value !== null) {
+                commit('addToCategoriesList', value);
+            } else {
+                console.error('Invalid categories list:', value);
+            }
+        },
+        setProductCategoryId({commit} , value) {
+            // Check if the value is a number
+            if (typeof value === 'string' && value.length > 0) {
+                commit('setProductCategoryId', value);
+            } else {
+                console.error('Invalid category ID:', value);
+            }
+        },
+        setProductOtherCategoryIds({commit} , value) {
+            // Check if the value is an array
+            if (Array.isArray(value)) {
+                commit('setProductOtherCategoryIds', value);
+            } else {
+                console.error('Invalid other category IDs:', value);
+            }
+        },
+        saveBrand({commit , state} , value) {
+            return new Promise(async (resolve , reject) => {
+                if (value.title.length > 1) {
+                    try {
+                        const result = await axios.post('/v1/brands' , {
+                            title: value.title,
+                        })
+                        if(result.status === 201) {
+                            resolve({
+                                success: true,
+                                message: "برند با موفقیت ثبت شد",
+                                brand: result.data.brand
+                            })
+
+                            commit("addToBrandsList" , result.data.brand);
+                        }
+                    } catch(error) {
+                        reject({
+                            success: false,
+                            message: "خطای سمت سرور"
+                        })
+                    }
+                } else {
+                    reject({
+                        success: false,
+                        message: "برند نامعتبر است"
+                    })
+                }
+            })
+        },
+        setProductBrandId({commit} , value) {
+            // Check if the value is a number
+            if (typeof value === 'string' && value.length > 0) {
+                commit('setProductBrandId', value);
+            } else {
+                console.error('Invalid brand ID:', value);
+            }
+        },
+        updateProductIsActive({commit} , value) {
+            commit('setProductIsActive', value);
+        },
+        updateProductSkuNumber({commit} , value) {
+            // Check if the value is a number
+            if (typeof value === 'number') {
+                commit('setProductSkuNumber', value);
+            } else {
+                console.error('Invalid SKU number:', value);
+            }
+        },
+        updateProductGuarantee({commit} , value) {
+            // Check if the value is a string
+            if (typeof value === 'string' && value.length > 0) {
+                commit('setProductGuarantee', value);
+            } else {
+                console.error('Invalid guarantee:', value);
+            }
+        },
+        saveTag({commit} , value) {
+            return new Promise(async (resolve , reject) => {
+                if (value.title.length > 1) {
+                    try {
+                        const result = await axios.post('/v1/tags' , {
+                            title: value.title,
+                        })
+                        if(result.status === 201) {
+                            resolve({
+                                success: true,
+                                message: "برچسب با موفقیت ثبت شد",
+                                tag: result.data.tag
+                            })
+
+                            commit("addToTagsList" , result.data.tag);
+                        }
+                    } catch(error) {
+                        reject({
+                            success: false,
+                            message: "خطای سمت سرور"
+                        })
+                    }
+                } else {
+                    reject({
+                        success: false,
+                        message: "برچسب نامعتبر است"
+                    })
+                }
+            })
+        },
+        setProductTags({commit} , value) {
+            // Check if the value is an array
+            if (Array.isArray(value)) {
+                commit('addTpProductTags', value);
+            } else {
+                console.error('Invalid other category IDs:', value);
+            }
         }
     },
     getters: {
@@ -268,6 +644,45 @@ const store = createStore({
         },
         getProductSpecifications(state) {
             return state.productData.specifications;
+        },
+        getProductDescription(state) {
+            return state.productData.description;
+        },
+        getProductReview(state) {
+            return state.productData.review;
+        },
+        getProductHasVariants(state) {
+            return state.productData.has_variantion;
+        },
+        getProductAttributeGroups(state) {
+            return state.productData.attributes;
+        },
+        getProductVariants(state) {
+            return state.productData.variants;
+        },
+        getProductSeoTitle(state) {
+            return state.productData.seo_title;
+        },
+        getProductSeoDescription(state) {
+            return state.productData.seo_description;
+        },
+        getCategoriesList(state) {
+            return state.categories_list;
+        },
+        getBrandsList(state) {
+            return state.brands_list;
+        },
+        getTagsList(state) {
+            return state.tags_list;
+        },
+        getProductIsActive(state) {
+            return state.productData.is_active;
+        },
+        getProductSkuNumber(state) {
+            return state.productData.sku_number;
+        },
+        getProductGuarantee(state) {
+            return state.productData.guarantee;
         }
 
     },

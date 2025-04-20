@@ -8,28 +8,28 @@
           tinymce-script-src="/tinymce/tinymce.min.js"
           v-model="description"
           :init="editorConfig"
-          class="custom-editor bg-white"
+          class="custom-editor2 bg-white"
         />
       </div>
   
-      <div class="mt-4 text-left">
-        <button
-          @click="saveDescription"
-          class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition"
-        >
-          ذخیره توضیحات
-        </button>
-      </div>
     </div>
-  </template>
+</template>
   
-  <script setup>
-  import { ref, onMounted } from 'vue'
+<script setup>
+  import { ref, onMounted, computed } from 'vue'
+  import store from '@/store/index.js'
   import Editor from '@tinymce/tinymce-vue'
   
-  const description = ref('')
+
   const isEditorReady = ref(false)
   const editorKey = ref(0)
+
+  const description = computed({
+    get: () => store.getters.getProductReview,
+    set: (value) => {
+      store.dispatch('updateProductReview', value)
+    },
+  })
   
   const loadTinyMCEScript = () => {
     return new Promise((resolve, reject) => {
@@ -46,8 +46,8 @@
   }
   
   onMounted(async () => {
-    await loadTinyMCEScript()
-    isEditorReady.value = true
+      await loadTinyMCEScript()
+      isEditorReady.value = true
   })
   
   const editorConfig = {
@@ -69,7 +69,7 @@
         const formData = new FormData()
         formData.append('file', blobInfo.blob(), blobInfo.filename())
   
-        const response = await fetch('/api/upload-image', {
+        const response = await fetch('http://localhost:8000/api/v1/tiny', {
           method: 'POST',
           body: formData,
         })
@@ -110,7 +110,7 @@
   </script>
   
   <style scoped>
-  .custom-editor {
+  .custom-editor2 {
     max-width: 100%;
   }
   </style>

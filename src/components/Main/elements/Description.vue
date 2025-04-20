@@ -12,25 +12,27 @@
         />
       </div>
   
-      <div class="mt-4 text-left">
-        <button
-          @click="saveDescription"
-          class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition"
-        >
-          ذخیره توضیحات
-        </button>
-      </div>
     </div>
-  </template>
+</template>
   
   <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, onMounted, computed } from 'vue'
+  import store from '@/store/index.js'
   import Editor from '@tinymce/tinymce-vue'
   
-  const description = ref('')
+
+
   const isEditorReady = ref(false)
   const editorKey = ref(0)
+
+  const description = computed({
+    get: () => store.getters.getProductDescription,
+    set: (value) => {
+      store.dispatch('updateProductDescription', value)
+    },
+  })
   
+
   const loadTinyMCEScript = () => {
     return new Promise((resolve, reject) => {
       if (!window.tinymce) {
@@ -44,10 +46,13 @@
       }
     })
   }
+
   
   onMounted(async () => {
-    await loadTinyMCEScript()
-    isEditorReady.value = true
+    setTimeout(async() => {
+      await loadTinyMCEScript()
+      isEditorReady.value = true
+    }, 500);
   })
   
   const editorConfig = {
@@ -69,15 +74,15 @@
         const formData = new FormData()
         formData.append('file', blobInfo.blob(), blobInfo.filename())
   
-        const response = await fetch('/api/upload-image', {
+        const response = await fetch('http://localhost:8000/api/v1/tiny', {
           method: 'POST',
           body: formData,
         })
   
         const result = await response.json()
-  
-        if (response.ok && result?.url) {
-          success(result.url)
+        // console.log(result)
+        if (response.ok && result?.location) {
+          success(result.location)
         } else {
           failure('خطا در دریافت آدرس عکس از سرور.')
         }

@@ -41,11 +41,26 @@
         </div>
       </div>
     </div>
-  </template>
+</template>
   
-  <script setup>
-  import { ref } from 'vue'
+<script setup>
+  import { ref, computed } from 'vue'
+  import store from '@/store/index.js'
   
-  const title = ref('')
-  const description = ref('')
-  </script>
+  const title = computed({
+    get() {
+      return store.getters.getProductSeoTitle
+    },
+    set(value) {
+      store.dispatch('updateProductSeoTitle', value)
+    },
+  })
+  const description = computed({
+    get() {
+      return store.getters.getProductSeoDescription
+    },
+    set(value) {
+      store.dispatch('updateProductSeoDescription', value)
+    },
+  })
+</script>

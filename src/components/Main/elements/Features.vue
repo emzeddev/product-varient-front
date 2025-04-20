@@ -197,6 +197,9 @@
             text: res.message,
             type: 'success',
           })
+
+          specifications.value[index].feature = input
+          specifications.value[index].dropdownOpen = false
         }).catch(err => {
           show_alert({
             text: err.message,
@@ -204,8 +207,7 @@
           })
         })
       }
-      // specifications.value[index].feature = input
-      // specifications.value[index].dropdownOpen = false
+      
     }
   }
   </script>
