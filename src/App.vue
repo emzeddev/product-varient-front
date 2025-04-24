@@ -11,7 +11,6 @@ import Sidebar from './components/Sidebar/index.vue'
   <div class="lg:col-span-3 col-span-full">
       <Sidebar/>
   </div>
-
 </div>
 
 </template>

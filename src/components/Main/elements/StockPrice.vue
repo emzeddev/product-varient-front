@@ -75,7 +75,7 @@
       </div>
   
       <!-- قیمت‌ها -->
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-2 gap-4" v-if="hasVarient == false">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">قیمت (تومان):</label>
           <input
@@ -145,6 +145,9 @@
   const maxOrderType = ref('0')
   const errorPriceBeforeOffer = ref(null)
   const spacial_offer_date = ref('')
+  const hasVarient = computed(() => {
+    return store.getters.getProductHasVariants
+  })
 
 
   const stockStatus = computed(() => {

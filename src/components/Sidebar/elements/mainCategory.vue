@@ -15,6 +15,7 @@
         v-model="input"
         @input="showDropdown = true"
         @keydown.enter.prevent="handleEnter"
+        autocomplete="off"
         @focus="showDropdown = true"
         class="border border-gray-300 rounded px-3 py-2 text-sm text-gray-800 focus:ring-1 focus:ring-indigo-500"
         placeholder="جستجو یا افزودن دسته‌بندی"

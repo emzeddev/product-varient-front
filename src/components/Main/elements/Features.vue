@@ -92,10 +92,10 @@
       <div class="mt-4 text-right px-4 py-2 border-t border-gray-200">
         <button
           @click="addSpec"
-          class="flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800"
+          class="mt-4 bg-indigo-600 text-white px-4 py-1 rounded hover:bg-indigo-700 cursor-pointer"
         >
           <i class="ti ti-plus"></i>
-          افزودن
+          افزودن مشخصات
         </button>
       </div>
     </div>

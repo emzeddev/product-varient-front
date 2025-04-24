@@ -31,6 +31,7 @@
           @input="showDropdown = true"
           @focus="showDropdown = true"
           placeholder="افزودن برچسب..."
+          autocomplete="off"
           class="flex-1 min-w-[100px] border-none focus:outline-none text-sm text-gray-800"
         />
       </div>

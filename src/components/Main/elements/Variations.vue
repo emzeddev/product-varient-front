@@ -112,7 +112,7 @@
       <div class="my-4 flex items-center">
         <button
           @click="addAttributeGroup"
-          class="text-sm text-indigo-600 flex items-center gap-1 mt-2"
+          class="mt-4 bg-indigo-600 text-white px-4 py-1 rounded hover:bg-indigo-700 cursor-pointer"
         >
           <i class="ti ti-plus"></i> افزودن ویژگی
         </button>
@@ -207,9 +207,9 @@
           </tbody>
         </table>
 
-        <button @click="commitValues" class="mt-4 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+        <!-- <button @click="commitValues" class="mt-4 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
           اعمال تغییرات
-        </button>
+        </button> -->
       </div>
     </div>
   </div>

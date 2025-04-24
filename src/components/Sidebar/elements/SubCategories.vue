@@ -29,6 +29,7 @@
           @input="showDropdown = true"
           @keydown.enter.prevent="addCategory"
           placeholder="جستجوی دسته‌بندی..."
+          autocomplete="off"
           class="flex-1 min-w-[100px] border-none focus:outline-none text-sm text-gray-800"
         />
       </div>
@@ -60,7 +61,7 @@
 </template>
   
 <script setup>
-  import { ref, computed, onMounted, getCurrentInstance } from 'vue'
+  import { ref, computed, onMounted, getCurrentInstance, watch } from 'vue'
   import store from '@/store/index.js'
   import debounce from 'lodash/debounce';
   import _ from 'lodash';
@@ -75,10 +76,16 @@
   // دسته‌های موجود
   const categories = computed(() => store.getters.getCategoriesList )
 
-  onMounted(async () => {
-    await store.dispatch('getCategoriesList')
-    flatCategories.value = flattenCategories(categories.value)
-  })
+
+  watch(
+    () => categories.value,
+    (newVal) => {
+      if (newVal && newVal.length) {
+        flatCategories.value = flattenCategories(newVal)
+      }
+    },
+    { immediate: true, deep: true }
+  )
 
   const show_alert = (obj) => {
     const {$toast} = appContext.config.globalProperties;
