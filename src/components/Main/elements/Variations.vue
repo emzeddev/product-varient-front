@@ -159,8 +159,8 @@
                 <input
                   type="radio"
                   name="default"
-                  :value="index"
                   v-model="variant.is_default"
+                  :checked="variant.is_default"
                 />
               </td>
               <td class="p-2 border text-center">
@@ -176,6 +176,11 @@
                     <img
                       v-if="variant.localimage"
                       :src="variant.localimage"
+                      class="w-10 h-10 object-cover rounded-full inline-block"
+                    />
+                    <img
+                      v-else-if="variant.image !== '' && isString(variant.image)"
+                      :src="variant.image"
                       class="w-10 h-10 object-cover rounded-full inline-block"
                     />
                     <div
@@ -235,27 +240,12 @@ watch(hasVariants, (newValue) => {
   } 
 });
 
+
 const attributeGroups = computed(() => {
   return store.getters.getProductAttributeGroups;
 });
 
-const show_alert = (obj) => {
-  const {$toast} = appContext.config.globalProperties;
-
-  $toast(obj.text, {
-    "type": obj.type,
-    "dangerouslyHTMLString": true,
-    "position": "bottom-right",
-    "transition": "flip",
-    "dir": "rtl"
-  })
-}
-
-// هنگام تایپ
-const onFeatureInput =(index) => {
-  attributeGroups.value[index].feature = ''
-  attributeGroups.value[index].showDropdown = true
-}
+let idCounter = 2
 
 const generateVariants = () => {
   const valueArrays = attributeGroups.value.map(attr => attr.values)
@@ -267,7 +257,6 @@ const generateVariants = () => {
     if (filtered.length === 0) return []
     
     if (filtered.length === 1) return filtered[0].map(item => [item])
-    console.log(filtered);
 
     return filtered.reduce((a, b) => {
       return a.flatMap(d => b.map(e => [...d, e]))
@@ -283,6 +272,7 @@ const generateVariants = () => {
       variant[attr.feature] = combination[i]
     })
     return {
+      id: idCounter++,
       properties: variant,
       sku: combination.join('-'),
       is_default: false,
@@ -302,6 +292,39 @@ const generateVariants = () => {
 
   store.dispatch("updateProductVariants", variantArray)
 }
+
+const isString = (val) => {
+  return typeof val === 'string';
+}
+
+
+// [
+watch(attributeGroups , (newVal) => {
+  generateVariants()
+} , {immediate: true})
+// ]
+
+
+
+const show_alert = (obj) => {
+  const {$toast} = appContext.config.globalProperties;
+
+  $toast(obj.text, {
+    "type": obj.type,
+    "dangerouslyHTMLString": true,
+    "position": "bottom-right",
+    "transition": "flip",
+    "dir": "rtl"
+  })
+}
+
+// هنگام تایپ
+const onFeatureInput =(index) => {
+  attributeGroups.value[index].feature = ''
+  attributeGroups.value[index].showDropdown = true
+}
+
+
 
 const addAttributeGroup = () => {
   store.dispatch("addProductAttributeGroup", {

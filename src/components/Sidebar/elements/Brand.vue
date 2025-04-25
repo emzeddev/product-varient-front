@@ -54,7 +54,7 @@
 </template>
   
 <script setup>
-  import { ref, computed, onMounted, getCurrentInstance } from 'vue'
+  import { ref, computed, onMounted,watchEffect, getCurrentInstance } from 'vue'
   import store from '@/store/index.js'
   
   const input = ref('')
@@ -68,6 +68,20 @@
   onMounted(() => {
     store.dispatch('getBrandsList')
   })
+
+  // [
+    const getProductBrandId = computed(() => store.getters.getProductBrandId)
+
+    const stop = watchEffect(() => {
+      if (brands.value.length > 0 && getProductBrandId.value) {
+        const findBrand = brands.value.find(brand => brand.id === getProductBrandId.value)
+
+        if(findBrand) selectBrand(findBrand)
+
+        stop()
+      }
+    })
+  // ]
 
   const show_alert = (obj) => {
     const {$toast} = appContext.config.globalProperties;

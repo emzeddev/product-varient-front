@@ -278,9 +278,127 @@ const store = createStore({
             } else {
                 console.error('Invalid tags array:', value);
             }
-        }
-        
+        },
 
+
+        async setdefaultValuesForProductData(state , product) {
+            state.productData.fa_title = product.fa_title != 'null' ? product.fa_title : null 
+            state.productData.fa_slug = product.fa_slug != 'null' ? product.fa_slug : null 
+            state.productData.en_title = product.fa_title != 'null' ? product.en_title : null 
+            state.productData.en_slug = product.fa_slug != 'null' ? product.en_slug : null 
+
+            state.productData.stock = parseInt(product.stock)
+            state.productData.stock_status = product.stock_status
+
+            state.productData.minimum_order_q = parseInt(product.minimum_order_q)
+            state.productData.maximum_order_q = parseInt(product.maximum_order_q)
+            
+            state.productData.is_spacial_offer = product.is_spacial_offer == "true" ? true : false
+            state.productData.spacial_offer_date = product.spacial_offer_date
+
+            if(product.galleries.length != 0) {
+                const gallery = product.galleries.map((val , index) => {
+                    return {
+                        id: val.id,
+                        file: val.file != 'null' ? `http://localhost:8000/storage/${val.file}` : null,
+                        preview: '',
+                        alt: val.alt,
+                        isMain: val.is_main == "yes" ? true : false,
+                    }
+                })
+                state.productData.galleries = gallery
+            }
+
+            if(product.specifications.length != 0) {
+                product.specifications.forEach((spec , index) => {
+                    state.productData.specifications = [{
+                        dropdownOpen: false,
+                        feature: spec.title,
+                        featureInput: spec.title,
+                        id: index+1,
+                        value: spec.value
+                    } , ...state.productData.specifications]
+                });
+            }
+
+            state.productData.description = product.description != 'null' ? product.description : null
+            state.productData.has_variantion = product.has_variantion == "true" ? true : false
+
+            if(product.attributes.length != 0) {
+                const setAttributePromise = new Promise((resolve , reject) => {
+                    product.attributes.forEach((attr , index) => {
+                        const pushedData = {
+                            showDropdown: false,
+                            feature: attr.attribute?.name,
+                            input: attr.attribute?.name,
+                            tempValue: "",
+                            values: []
+                        }
+    
+                        if(attr.values.length != 0) {
+                            attr.values.forEach((val , index) => {
+                                pushedData.values = [val.value , ...pushedData.values]
+                            })
+                        }
+    
+                        state.productData.attributes = [pushedData, ...state.productData.attributes]
+
+                        resolve({
+                            success: true
+                        })
+                    })
+                })
+                
+                const result = await setAttributePromise
+                if(result.success) {
+                    setTimeout(() => {
+                        if(product.variants.length != 0) {
+                            product.variants.forEach((variant , index) => {
+                                state.productData.variants[index].id = variant.id
+                                state.productData.variants[index].is_default = variant.is_default == "no" ? false : true
+                                state.productData.variants[index].localimage = null
+                                state.productData.variants[index].image = variant.image != 'null' ? `http://localhost:8000/storage/${variant.image}`: null
+                                state.productData.variants[index].price = parseInt(variant.price)
+                                state.productData.variants[index].price_before_discount = parseInt(variant.price_before_discount)
+                                state.productData.variants[index].stock = parseInt(variant.stock)
+                                state.productData.variants[index].weight = parseInt(variant.weight)
+                                state.productData.variants[index].preparation_time = parseInt(variant.preparation_time)
+                                state.productData.variants[index].sku_number = parseInt(variant.sku_number)
+        
+                                state.productData.variants[index]["length"] = variant["length"] == "null" ? null : variant["length"]
+                                state.productData.variants[index]["width"] = variant["width"] == "null" ? null : variant["width"]
+                                state.productData.variants[index]["height"] = variant["height"] == "null" ? null : variant["height"]
+                            })
+                        }
+                    },3000)
+                }
+            }
+
+            state.productData.review = product.review != 'null' ? product.review : null
+            state.productData.seo_title = product.seo_title != 'null' && product.seo_title != null ? product.seo_title : ''
+            state.productData.seo_description = product.seo_description != 'null' && product.seo_description != null ? product.seo_description : ''
+
+            state.productData.primary_category_id = product.primary_category_id
+            if(product.categories.length != 0) {
+                const otherCatIds = product.categories.map((val , index) => {
+                    return val.id
+                })
+                state.productData.other_category_ids = otherCatIds
+            }
+
+            state.productData.brand_id = product.brand_id != "null" ? product.brand_id : null
+            state.productData.guarantee = product.guarantee != "null" ? product.guarantee : null
+
+            if(product.tags.length != 0) {
+                const tagIds = product.tags.map((val , index) => {
+                    return val.id
+                })
+                state.productData.tags = tagIds
+            }
+            
+            
+
+        }
     },
     actions: {
         // Define asynchronous functions to commit mutations
@@ -431,7 +549,6 @@ const store = createStore({
         async getCategoriesList({commit}) {
             const result = await axios.get('/v1/categories')
             if (result.status === 200) {
-                console.log(result);
                 commit('setCategoriesList', result.data);
             }
         },
@@ -671,7 +788,11 @@ const store = createStore({
                 }
             
                 try {
-                  const result = await axios.post("/v1/products", formData);
+                  const result = await axios.post("/v1/products", formData , {
+                    headers :{
+                        "Content-Type": "multipart/form-data"
+                    }
+                  });
             
                   if (result.status === 201) {
                     resolve({
@@ -690,6 +811,36 @@ const store = createStore({
                   });
                 }
             });
+        },
+
+        getProductById({commit} , value) {
+            return new Promise(async (resolve , reject) => {
+                try {
+                    const result = await axios.get(`/v1/products/${value.id}`)
+                    
+                    if(result.status == 200) {
+                        resolve({
+                            success: true,
+                            message: "با موفقیت دریافت شد",
+                            product: result.data.product
+                        })
+
+                        commit("setdefaultValuesForProductData" , result.data.product)
+
+
+                    }else {
+                        reject({
+                            success: false,
+                            message: "خطایی رخ داد",
+                        });
+                    }
+                }catch(err) {
+                    reject({
+                        success: false,
+                        message: err?.response?.data?.message || "خطای ناشناخته‌ای رخ داد",
+                    });
+                }
+            })
         }
     },
     getters: {
@@ -768,7 +919,25 @@ const store = createStore({
         },
         getProductGuarantee(state) {
             return state.productData.guarantee;
+        },
+
+        // [
+        getSpecialOfferDataValue(state) {
+            return state.productData.spacial_offer_date
+        },
+        getProductPrimaryCategory(state) {
+            return state.productData.primary_category_id
+        },
+        getProductOtherCategoryIds(state) {
+            return state.productData.other_category_ids
+        },
+        getProductBrandId(state) {
+            return state.productData.brand_id
+        },
+        getProductTagIds(state) {
+            return state.productData.tags
         }
+        // ]
 
     },
 });

@@ -62,7 +62,7 @@
 </template>
   
   <script setup>
-  import { ref, computed, getCurrentInstance, onMounted } from 'vue'
+  import { ref, computed, getCurrentInstance,watchEffect, onMounted } from 'vue'
   import store from '@/store/index.js'
   import _ from 'lodash';
   
@@ -77,8 +77,28 @@
     // بارگذاری برچسب‌ها از سرور
     store.dispatch("getTagsList")
   })
-  
   const tagSuggestions = computed(() => store.getters.getTagsList)
+
+  // [
+    const getProductTagIds = computed(() => store.getters.getProductTagIds)
+
+    const stop = watchEffect(() => {
+      if (tagSuggestions.value.length > 0 && getProductTagIds.value) {
+        const findTags = tagSuggestions.value.filter(tag =>
+          getProductTagIds.value.includes(tag.id)
+        )
+        
+        if (findTags.length !== 0) {
+          findTags.forEach(tag => {
+            selectTag(tag)
+          })
+          stop() 
+        }
+      }
+    })
+  // ]
+  
+  
   // فیلتر پیشنهادات بر اساس ورودی
   const filteredTags = computed(() => {
     const keyword = input.value.toLowerCase()

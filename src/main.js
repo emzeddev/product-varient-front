@@ -3,6 +3,7 @@ import './assets/tabler/tabler.css'
 
 import { createApp } from 'vue'
 import App from './App.vue'
+import router from './router/index.js'
 
 import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker'
 import toastPlugin from './plugins/toast.js'
@@ -13,6 +14,7 @@ const app = createApp(App)
 // بعد کامپوننت رو ثبت کن
 app.component('DatePicker', Vue3PersianDatetimePicker)
 app.use(toastPlugin)
+app.use(router)
 
 // حالا اپ رو مانت کن
 app.mount('#app')

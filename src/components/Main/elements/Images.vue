@@ -33,7 +33,7 @@
           <!-- انتخاب تصویر -->
           <div class="flex flex-col items-center gap-2">
             <label
-              v-if="!image.preview"
+              v-if="!image.preview && image.file == null"
               class="cursor-pointer text-indigo-600 hover:underline"
             >
               انتخاب تصویر
@@ -45,7 +45,13 @@
               />
             </label>
             <img
-              v-if="image.preview"
+              v-else-if="!Number.isInteger(image.id) && image.preview == ''"
+              :src="image.file"
+              alt="preview"
+              class="h-16 w-auto rounded border border-gray-300"
+            />
+            <img
+              v-else
               :src="image.preview"
               alt="preview"
               class="h-16 w-auto rounded border border-gray-300"
@@ -83,40 +89,18 @@
           افزودن تصویر
         </button>
       </div>
-
-      <!-- <div class="mt-4 text-left">
-        <button
-          class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition cursor-pointer"
-          @click="setProductImagesOnStore()"
-        >
-          ذخیره تغییرات
-        </button>
-      </div> -->
     </div>
 </template>
   
 <script setup>
-  import { reactive, computed, getCurrentInstance, toRaw } from 'vue'
+  import { reactive, computed, toRaw } from 'vue'
   import store from '@/store/index.js'
   
-  const { appContext } = getCurrentInstance()
   let idCounter = 2
 
   const images = computed(() => store.getters.getProductImages)
   
 
-
-  // const show_alert = (obj) => {
-  //   const {$toast} = appContext.config.globalProperties;
-
-  //   $toast(obj.text, {
-  //     "type": obj.type,
-  //     "dangerouslyHTMLString": true,
-  //     "position": "bottom-right",
-  //     "transition": "flip",
-  //     "dir": "rtl"
-  //   })
-  // }
   
   const addNewImage = () => {
     store.dispatch('addProductImage', {
@@ -150,55 +134,6 @@
       reader.readAsDataURL(file)
     }
   }
-
-  // const setProductImagesOnStore = async (obj) => {
-  //   const validate = await validateImages()
-  //     .then((result) => {
-
-  //       const plainImages = JSON.parse(JSON.stringify(images))
-  //       store.dispatch('updateProductImages', plainImages)
-
-  //       show_alert({
-  //         text: "تغییرات اعمال شد",
-  //         type: 'success',
-  //       })
-  //     })
-  //     .catch((err) => {
-  //       show_alert({
-  //         text: err.message,
-  //         type: 'error',
-  //       })
-  //     })
-  // }
-
-  
-
-
-  // const validateImages = () => {
-  //   const allFilesPresent = images.every(image => image.file !== null);
-  //   const mainImagesCount = images.filter(image => image.isMain).length;
-
-  //   return new Promise((resolve, reject) => {
-  //     if (!allFilesPresent) {
-  //       reject({
-  //         valid: false,
-  //         message: 'برای تمامی عکس ها فایل مورد نظر را باید انتخاب کنید',
-  //       });
-  //     }
-
-  //     if(mainImagesCount !== 1) {
-  //       reject({
-  //         valid: false,
-  //         message: 'یکی از عکس ها را به عنوان عکس اصلی انتخاب کنید',
-  //       });
-  //     }
-
-  //     resolve({
-  //       valid: true,
-  //       message: 'همه چیز اوکیه ✅',
-  //     });
-  //   });
-  // };
 
 
   

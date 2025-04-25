@@ -166,6 +166,24 @@
     return store.getters.getProductMaxOrderQuantity
   })
 
+  // [
+  const getSpecialOfferDataValue = computed(() => {
+    return store.getters.getSpecialOfferDataValue
+  })
+  // ]
+
+  watch(min_order_quantity, (newVal) => {
+    if (parseInt(newVal) !== 0) {
+      minOrderType.value = '1'
+    }
+  }, { immediate: true })
+
+  watch(max_order_quantity, (newVal) => {
+    if (parseInt(newVal) !== 0) {
+      maxOrderType.value = '1'
+    }
+  }, { immediate: true })
+
   const price = computed(() => {
     return store.getters.getProductPrice
   })
@@ -246,9 +264,15 @@
     store.dispatch('updateProductIsSpecialOffer', value)
   }
 
+  // [
   watch(spacial_offer_date, (newValue) => {
     store.dispatch('updateProductSpecialOfferDate', newValue)
-  })
+  }) 
+  // ]
+
+  watch(getSpecialOfferDataValue , (newVal) => {
+    spacial_offer_date.value = newVal
+  } , {immediate: true})
 
   </script>
   

@@ -61,7 +61,7 @@
 </template>
   
 <script setup>
-  import { ref, computed, onMounted, getCurrentInstance, watch } from 'vue'
+  import { ref, computed, onMounted,watchEffect, getCurrentInstance, watch } from 'vue'
   import store from '@/store/index.js'
   import debounce from 'lodash/debounce';
   import _ from 'lodash';
@@ -75,29 +75,6 @@
   
   // دسته‌های موجود
   const categories = computed(() => store.getters.getCategoriesList )
-
-
-  watch(
-    () => categories.value,
-    (newVal) => {
-      if (newVal && newVal.length) {
-        flatCategories.value = flattenCategories(newVal)
-      }
-    },
-    { immediate: true, deep: true }
-  )
-
-  const show_alert = (obj) => {
-    const {$toast} = appContext.config.globalProperties;
-
-    $toast(obj.text, {
-      "type": obj.type,
-      "dangerouslyHTMLString": true,
-      "position": "bottom-right",
-      "transition": "flip",
-      "dir": "rtl"
-    })
-  }
 
   const flattenCategories = (categories) => {
     const result = [];
@@ -118,6 +95,49 @@
     flatten(categories);
     return result;
   };
+
+  watch(
+    () => categories.value,
+    (newVal) => {
+      if (newVal && newVal.length) {
+        flatCategories.value = flattenCategories(newVal)
+      }
+    },
+    { immediate: true, deep: true }
+  )
+
+  // [
+  const getProductOtherCategoryIds = computed(() => store.getters.getProductOtherCategoryIds)
+
+  const stop = watchEffect(() => {
+    if (flatCategories.value.length > 0 && getProductOtherCategoryIds.value) {
+      const findCats = flatCategories.value.filter(cat =>
+        getProductOtherCategoryIds.value.includes(cat.id)
+      )
+      
+      if (findCats.length !== 0) {
+        findCats.forEach(cat => {
+          selectCategory(cat)
+        })
+        stop() 
+      }
+    }
+  })
+  // ]
+
+  const show_alert = (obj) => {
+    const {$toast} = appContext.config.globalProperties;
+
+    $toast(obj.text, {
+      "type": obj.type,
+      "dangerouslyHTMLString": true,
+      "position": "bottom-right",
+      "transition": "flip",
+      "dir": "rtl"
+    })
+  }
+
+  
 
   const searchCategories = (query) => {
     return flatCategories.value.filter(cat =>

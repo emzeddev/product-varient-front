@@ -50,7 +50,7 @@
 </template>
   
   <script setup>
-  import { ref, computed , onMounted ,getCurrentInstance } from 'vue'
+  import { ref, computed , onMounted ,getCurrentInstance , watchEffect } from 'vue'
   import store from '@/store/index.js'
   import debounce from 'lodash/debounce';
 
@@ -62,9 +62,22 @@
   const searchResult = ref([]);
   const { appContext } = getCurrentInstance()
 
+  // [
+  const getProductPrimaryCategory = computed(() => store.getters.getProductPrimaryCategory)
 
+  const stop = watchEffect(() => {
+    if (flatCategories.value.length > 0 && getProductPrimaryCategory.value) {
+      const findCat = flatCategories.value.find(cat => cat.id === getProductPrimaryCategory.value)
+      selectCategory({
+        id: findCat.id,
+        title: findCat.title,
+        parent: findCat.parent_id == "0" ? null : findCat.parent_id
+      })
 
-
+      stop()
+    }
+  })
+  // ]
   
 
   onMounted(async () => {
